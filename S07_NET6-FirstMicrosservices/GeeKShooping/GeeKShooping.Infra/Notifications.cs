@@ -68,5 +68,11 @@ namespace GeeKShooping.Infra
             ClearNotifications();
             return notifications;
         }
+        public static string GetFirstError()
+        {
+            var notification = ListaNotification.Where(x => !x.Sucesso).Select(x => x.Mensagem).ToList().FirstOrDefault();
+            ClearNotifications();
+            return notification;
+        }
     }
 }

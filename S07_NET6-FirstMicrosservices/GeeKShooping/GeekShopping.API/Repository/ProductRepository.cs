@@ -25,6 +25,37 @@ namespace GeekShopping.API.Repository
             var productsList =  await _context.Products.ToListAsync();
             return _mapper.Map<List<ProductDto>>(productsList);
         }
+
+        public async Task<ProductDto> FindByName(string name)
+        {
+
+            var productDto = new ProductDto();
+
+            try
+            {
+                if (string.IsNullOrEmpty(name))
+                {
+                    Notify("name inválido", "FindByName");
+                    return productDto;
+                }
+
+                var productsList = await _context.Products.ToListAsync();
+
+                var products = await _context.Products
+                                     .Where(p => p.Name.ToUpper().Contains(name.ToUpper()))
+                                     .FirstOrDefaultAsync() ?? new Product();
+                productDto = _mapper.Map<ProductDto>(products);
+            }
+            catch (Exception ex)
+            {
+
+                Notification.Notify($"Erro ao buscar Por nome. : {ex.Message} ", "FindByName");
+            }
+
+
+            return productDto;
+        }
+
         public async Task<ProductDto> FindById(long id)
         {
          

@@ -27,6 +27,18 @@ namespace GeekShopping.API.Controllers
             if (products == null) return NotFound();
             return Ok(products);
         }
+
+        [HttpGet("get-name-async/{name}")]
+        public async Task<ActionResult<ProductDto>> GetByNameAsync(string name)
+        {
+            var products = await _productRepository.FindByName(name);
+            if (!Notification.IsValid())
+                return BadRequest(Notification.GetErrors());//Diz que esta inserir algo que não existe
+
+            return Ok(products);
+        }
+
+
         [HttpGet("{id}")]
         public async Task<ActionResult<ProductDto>> FindById(long id)
         {
@@ -38,14 +50,16 @@ namespace GeekShopping.API.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<ProductDto>> Create(ProductDto productDto)
+        public async Task<ActionResult<ProductDto>> Create([FromBody] ProductDto productDto)
         {
             var products = await _productRepository.Create(productDto);
 
             if (!Notification.IsValid())
-                return BadRequest(Notification.GetErrors());//Diz que esta inserir algo que não existe
+            {
+                string result = Notification.GetFirstError().ToString();
+                return BadRequest(new { result });
+            }
 
-          
             return Ok(products);
         }
 
@@ -60,10 +74,13 @@ namespace GeekShopping.API.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpPut]
-        public async Task<ActionResult<ProductDto>> Update(ProductDto productDto)
+        public async Task<ActionResult<ProductDto>> Update([FromBody] ProductDto productDto)
         {
             if (!Notification.IsValid())
-                return BadRequest(Notification.GetErrors());//Diz que esta inserir algo que não existe
+            {
+                string result = Notification.GetFirstError().ToString();//Diz que esta inserir algo que não existe
+                return BadRequest(new { result });
+            }
 
             var products = await _productRepository.Update(productDto);
             return Ok(products);
@@ -75,7 +92,10 @@ namespace GeekShopping.API.Controllers
             var status = await _productRepository.Delete(id);
 
             if (!Notification.IsValid())
-                return BadRequest(Notification.GetErrors());//Diz que esta inserir algo que não existe
+            {
+                string result = Notification.GetFirstError().ToString();//Diz que esta inserir algo que não existe
+                return BadRequest(new { result });
+            }
 
             return Ok(status);
         }
